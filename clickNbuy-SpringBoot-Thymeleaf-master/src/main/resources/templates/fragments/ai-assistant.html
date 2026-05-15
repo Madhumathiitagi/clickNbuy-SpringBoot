@@ -1,0 +1,166 @@
+<!-- AI Assistant Fragment -->
+<div id="ai-assistant-container" th:fragment="ai-assistant">
+    <!-- Floating Button -->
+    <button id="ai-chat-btn" class="btn btn-primary rounded-circle shadow-lg" 
+            style="position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; z-index: 1000; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: all 0.3s ease;">
+        <i class="bi bi-chat-dots-fill text-white"></i>
+    </button>
+
+    <!-- Chat Window -->
+    <div id="ai-chat-window" class="card shadow-lg d-none" 
+         style="position: fixed; bottom: 100px; right: 30px; width: 350px; height: 500px; z-index: 1000; border-radius: 1.5rem; overflow: hidden; display: flex; flex-direction: column;">
+        
+        <!-- Header -->
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center p-3">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-stars me-2"></i>
+                <h6 class="mb-0 fw-bold">ClickNBuy AI Assistant</h6>
+            </div>
+            <button type="button" class="btn-close btn-close-white" id="close-ai-chat"></button>
+        </div>
+
+        <!-- Messages -->
+        <div class="card-body p-3" id="ai-chat-messages" style="overflow-y: auto; flex-grow: 1; background: #f8f9fa;">
+            <div class="d-flex mb-3">
+                <div class="bg-white p-3 rounded-4 shadow-sm border" style="max-width: 85%; font-size: 0.9rem;">
+                    Hello! I'm your ClickNBuy AI assistant. How can I help you find something special today? 🛍️
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer / Input -->
+        <div class="card-footer bg-white border-top p-3">
+            <form id="ai-chat-form" class="d-flex gap-2">
+                <input type="text" id="ai-chat-input" class="form-control rounded-pill border-2" 
+                       placeholder="Ask me anything..." autocomplete="off">
+                <button type="submit" class="btn btn-primary rounded-circle" style="width: 40px; height: 40px; padding: 0;">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Styles and Scripts -->
+    <style>
+        #ai-chat-btn:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+        .ai-message {
+            background: #e9ecef;
+            border-radius: 1rem 1rem 1rem 0;
+            padding: 0.75rem 1rem;
+            max-width: 85%;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .user-message {
+            background: var(--primary-color);
+            color: white;
+            border-radius: 1rem 1rem 0 1rem;
+            padding: 0.75rem 1rem;
+            max-width: 85%;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            margin-left: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 8px;
+        }
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #adb5bd;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatBtn = document.getElementById('ai-chat-btn');
+            const chatWindow = document.getElementById('ai-chat-window');
+            const closeBtn = document.getElementById('close-ai-chat');
+            const chatForm = document.getElementById('ai-chat-form');
+            const chatInput = document.getElementById('ai-chat-input');
+            const messagesContainer = document.getElementById('ai-chat-messages');
+
+            chatBtn.addEventListener('click', () => {
+                chatWindow.classList.toggle('d-none');
+                chatInput.focus();
+            });
+
+            closeBtn.addEventListener('click', () => {
+                chatWindow.classList.add('d-none');
+            });
+
+            function addMessage(text, isUser = false) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `d-flex ${isUser ? 'justify-content-end' : ''} mb-3`;
+                msgDiv.innerHTML = `
+                    <div class="${isUser ? 'user-message' : 'bg-white p-3 rounded-4 shadow-sm border'}" 
+                         style="max-width: 85%; font-size: 0.9rem;">
+                        ${text}
+                    </div>
+                `;
+                messagesContainer.appendChild(msgDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            function showTyping() {
+                const typingDiv = document.createElement('div');
+                typingDiv.id = 'ai-typing';
+                typingDiv.className = 'd-flex mb-3';
+                typingDiv.innerHTML = `
+                    <div class="bg-white p-2 rounded-4 shadow-sm border">
+                        <div class="typing-indicator">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                `;
+                messagesContainer.appendChild(typingDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            function hideTyping() {
+                const typingDiv = document.getElementById('ai-typing');
+                if (typingDiv) typingDiv.remove();
+            }
+
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const message = chatInput.value.trim();
+                if (!message) return;
+
+                addMessage(message, true);
+                chatInput.value = '';
+                showTyping();
+
+                try {
+                    const response = await fetch('/api/ai/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: message })
+                    });
+                    const data = await response.json();
+                    hideTyping();
+                    addMessage(data.response || "Something went wrong.");
+                } catch (error) {
+                    hideTyping();
+                    addMessage("Sorry, I'm offline at the moment. Please try again later!");
+                }
+            });
+        });
+    </script>
+</div>

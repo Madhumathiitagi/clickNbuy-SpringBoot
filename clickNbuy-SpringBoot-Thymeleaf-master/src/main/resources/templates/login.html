@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | ClickNBuy AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .login-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+        .login-bg {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="login-bg">
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="text-center mb-4">
+                    <a href="/" class="text-decoration-none">
+                        <h1 class="fw-800 text-white"><i class="bi bi-bag-heart-fill me-2"></i>ClickNBuy</h1>
+                    </a>
+                </div>
+                
+                <div class="login-card p-5">
+                    <h2 class="fw-bold mb-4 text-center">Welcome Back</h2>
+                    
+                    <!-- Alert Messages -->
+                    <div th:if="${param.error}" class="alert alert-danger rounded-pill border-0 text-center small mb-4">
+                        Invalid email or password.
+                    </div>
+                    <div th:if="${param.logout}" class="alert alert-success rounded-pill border-0 text-center small mb-4">
+                        You have been logged out.
+                    </div>
+                    <div th:if="${success}" class="alert alert-success rounded-pill border-0 text-center small mb-4">
+                        <span th:text="${success}"></span>
+                    </div>
+
+                    <form th:action="@{/login}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-muted">Email Address</label>
+                            <input type="email" name="username" class="form-control rounded-pill px-4 py-2 border-2" placeholder="name@company.com" required>
+                        </div>
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between">
+                                <label class="form-label small fw-semibold text-muted">Password</label>
+                                <a href="/forgot-password" class="small text-decoration-none fw-semibold">Forgot?</a>
+                            </div>
+                            <input type="password" name="password" class="form-control rounded-pill px-4 py-2 border-2" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="btn btn-premium w-100 rounded-pill py-2 shadow-sm">
+                            Sign In <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                    </form>
+                    
+                    <div class="text-center mt-5">
+                        <p class="text-muted small mb-0">Don't have an account? <a href="/register" class="fw-bold text-decoration-none">Create one</a></p>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="/" class="text-white opacity-75 text-decoration-none small"><i class="bi bi-house me-1"></i> Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
